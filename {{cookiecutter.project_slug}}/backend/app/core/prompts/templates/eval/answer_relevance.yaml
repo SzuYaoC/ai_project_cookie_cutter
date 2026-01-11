@@ -1,0 +1,21 @@
+_type: prompt
+input_variables:
+    - question
+    - answer
+template: |
+    You are evaluating whether an answer is relevant to the question.
+
+    QUESTION:
+    {question}
+
+    ANSWER:
+    {answer}
+
+    TASK: Determine if the answer directly addresses the question.
+    - Score 1.0: Answer fully addresses the question
+    - Score 0.5: Answer partially addresses the question or includes irrelevant info
+    - Score 0.0: Answer does not address the question at all
+
+    Respond in this exact format:
+    SCORE: <number>
+    REASON: <one sentence explanation>

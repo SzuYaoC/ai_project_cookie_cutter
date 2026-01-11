@@ -1,5 +1,5 @@
--- Enable UUID generation
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+{% if cookiecutter.project_type == 'rag' %}
+
 CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Documents table
@@ -52,55 +52,5 @@ CREATE TABLE IF NOT EXISTS chunks (
 
 CREATE INDEX IF NOT EXISTS idx_chunks_docver ON chunks (document_version_id);
 CREATE INDEX IF NOT EXISTS idx_chunks_embedding_hnsw ON chunks USING hnsw (embedding vector_cosine_ops);
-{% if cookiecutter.use_auth == 'yes' %}
--- User authentication
-CREATE TABLE IF NOT EXISTS users_info (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    username TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'user',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
 
--- Default users
-INSERT INTO users_info (id, username, password_hash, role, created_at)
-VALUES 
-    (gen_random_uuid(), 'admin', 'admin', 'admin', NOW()),
-    (gen_random_uuid(), 'user', 'user', 'user', NOW())
-ON CONFLICT (username) DO NOTHING;
 {% endif %}
--- Chainlit tables
-CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY,
-    identifier TEXT NOT NULL UNIQUE,
-    metadata JSONB NOT NULL,
-    "createdAt" TEXT
-);
-
-CREATE TABLE IF NOT EXISTS threads (
-    id UUID PRIMARY KEY,
-    "createdAt" TEXT,
-    name TEXT,
-    "userId" UUID,
-    "userIdentifier" TEXT,
-    tags TEXT[],
-    metadata JSONB,
-    FOREIGN KEY ("userId") REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS steps (
-    id UUID PRIMARY KEY,
-    name TEXT NOT NULL,
-    type TEXT NOT NULL,
-    "threadId" UUID NOT NULL,
-    "parentId" UUID,
-    streaming BOOLEAN NOT NULL,
-    "waitForAnswer" BOOLEAN,
-    "isError" BOOLEAN,
-    metadata JSONB,
-    tags TEXT[],
-    input TEXT,
-    output TEXT,
-    "createdAt" TEXT,
-    FOREIGN KEY ("threadId") REFERENCES threads(id) ON DELETE CASCADE
-);

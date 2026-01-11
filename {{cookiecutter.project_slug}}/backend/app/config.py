@@ -31,7 +31,21 @@ class Config(BaseSettings):
     azure_openai_embedding_deployment: str = os.environ.get("AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "")
     
     # MCP
+    {% if cookiecutter.project_type == 'rag' %}
     mcp_search_url: str = os.environ.get("MCP_SEARCH_URL", "http://mcp-search:7071/mcp")
+    {% endif %}
+
+    {% if cookiecutter.project_type == 'chatbot' %}
+    mcp_memory_url: str = os.environ.get("MCP_MEMORY_URL", "http://mcp-memory:7071/mcp")
+    {% endif %}
+
+    {% if cookiecutter.project_type in ['agent', 'multi_agent'] %}
+    mcp_tools_url: str = os.environ.get("MCP_TOOLS_URL", "http://mcp-tools:7071/mcp")
+    {% endif %}
+
+    {% if cookiecutter.project_type == 'multi_agent' %}
+    mcp_coordination_url: str = os.environ.get("MCP_COORDINATION_URL", "http://mcp-coordination:7073/mcp")
+    {% endif %}
     {% if cookiecutter.use_auth == 'yes' %}
     # JWT
     jwt_secret_key: str = os.environ.get("JWT_SECRET_KEY", "{{ cookiecutter.jwt_secret }}")
@@ -39,51 +53,7 @@ class Config(BaseSettings):
     jwt_expire_minutes: int = int(os.environ.get("JWT_EXPIRE_MINUTES", "60"))
     {% endif %}
     
-    def get_chat_model(self):
-        """Get the configured chat model based on provider"""
-        if self.llm_provider == "openai":
-            from langchain_openai import ChatOpenAI
-            return ChatOpenAI(
-                model=self.openai_model,
-                api_key=self.openai_api_key
-            )
-        elif self.llm_provider == "azure_openai":
-            from langchain_openai import AzureChatOpenAI
-            return AzureChatOpenAI(
-                azure_endpoint=self.azure_openai_endpoint,
-                api_key=self.azure_openai_api_key,
-                api_version=self.azure_openai_api_version,
-                deployment_name=self.azure_openai_deployment,
-            )
-        else:  # ollama
-            from langchain_ollama import ChatOllama
-            return ChatOllama(
-                base_url=self.ollama_base_url,
-                model=self.ollama_model
-            )
-    
-    def get_embedding_model(self):
-        """Get the configured embedding model based on provider"""
-        if self.llm_provider == "openai":
-            from langchain_openai import OpenAIEmbeddings
-            return OpenAIEmbeddings(
-                model=self.openai_embedding_model,
-                api_key=self.openai_api_key
-            )
-        elif self.llm_provider == "azure_openai":
-            from langchain_openai import AzureOpenAIEmbeddings
-            return AzureOpenAIEmbeddings(
-                azure_endpoint=self.azure_openai_endpoint,
-                api_key=self.azure_openai_api_key,
-                api_version=self.azure_openai_api_version,
-                deployment=self.azure_openai_embedding_deployment,
-            )
-        else:  # ollama
-            from langchain_ollama import OllamaEmbeddings
-            return OllamaEmbeddings(
-                base_url=self.ollama_base_url,
-                model=self.ollama_embedding_model
-            )
+
 
 
 cfg = Config()

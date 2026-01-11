@@ -1,0 +1,21 @@
+_type: prompt
+input_variables:
+    - context
+    - answer
+template: |
+    You are evaluating whether an answer is faithful to the provided context.
+
+    CONTEXT (retrieved documents):
+    {context}
+
+    ANSWER:
+    {answer}
+
+    TASK: Determine if EVERY claim in the answer is supported by the context.
+    - Score 1.0: All claims are directly supported by the context
+    - Score 0.5: Most claims are supported, but some are unsupported or exaggerated
+    - Score 0.0: The answer contains claims not found in the context (hallucination)
+
+    Respond in this exact format:
+    SCORE: <number>
+    REASON: <one sentence explanation>

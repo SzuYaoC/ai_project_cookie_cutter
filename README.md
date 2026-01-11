@@ -32,6 +32,7 @@ uvx cookiecutter ./ai_project_cookiecutter
 | `project_type` | rag, chatbot, agent, multi_agent | Type of AI project |
 | `llm_provider` | ollama, openai, azure_openai | LLM backend |
 | `use_auth` | yes, no | Include JWT authentication |
+| `build_frontend` | yes, no | Include Chainlit React frontend |
 
 ## Generated Structure
 
@@ -39,10 +40,15 @@ uvx cookiecutter ./ai_project_cookiecutter
 {{ project_slug }}/
 ├── backend/
 │   └── app/
-│       ├── api/          # Type-specific endpoints
-│       ├── rag/          # LangGraph workflows  
+│       ├── api/          # Type-specific endpoints (rag.py, chat.py, etc.)
+│       ├── core/         # Core Logic
+│       │   ├── eval/     # Evaluation metrics & graders
+│       │   ├── prompts/  # Dynamic YAML prompts
+│       │   ├── llm/      # LLM Factory & Configuration
+│       │   └── workflow.py # Centralized LangGraph workflows
+│       ├── schemas/      # Pydantic models
 │       └── config.py     # Multi-provider config
-├── frontend/             # Chainlit UI
+├── frontend/             # Chainlit UI (Conditional)
 ├── mcp_services/         # Type-specific MCP servers
 ├── postgres/init/        # DB schema
 ├── docker-compose.yml
@@ -64,6 +70,20 @@ uvx cookiecutter ./ai_project_cookiecutter
 ### Multi-Agent
 - **tools_server** - Shared tools for all agents
 - **coordination_server** - Task management, inter-agent messaging
+
+## Features
+
+### Evaluation & Testing
+The project includes a built-in evaluation framework in `backend/app/core/eval/`:
+- **Metrics**: `Answer Relevance` and `Faithfulness` (groundedness).
+- **LLM-as-a-Judge**: Uses your configured LLM to grade outputs.
+- **Evaluator**: Run `evaluate_rag(query, context, answer)` to get a comprehensive report.
+
+### Prompt Management
+Prompts are managed externally in YAML files for better version control and editing:
+- **Location**: `backend/app/core/prompts/templates/`
+- **Dynamic Loading**: `load_prompt_from_yaml()` loads templates at runtime.
+- **Customization**: Edit `default_rag.yaml`, `eval/faithfulness.yaml`, etc., without changing code.
 
 ## Post-Generation Cleanup
 

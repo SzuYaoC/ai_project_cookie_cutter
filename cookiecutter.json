@@ -23,5 +23,9 @@
     "use_auth": [
         "yes",
         "no"
+    ],
+    "build_frontend": [
+        "yes",
+        "no"
     ]
 }
