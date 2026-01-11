@@ -1,0 +1,109 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: "{{ cookiecutter.project_slug }}_db"
+    environment:
+      POSTGRES_USER: {{ cookiecutter.postgres_user }}
+      POSTGRES_PASSWORD: {{ cookiecutter.postgres_password }}
+      POSTGRES_DB: {{ cookiecutter.postgres_db }}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres/init:/docker-entrypoint-initdb.d
+      - ./postgres/db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{ cookiecutter.postgres_user }} -d {{ cookiecutter.postgres_db }}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - {{ cookiecutter.project_slug }}_network
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: "{{ cookiecutter.project_slug }}_ollama"
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - {{ cookiecutter.project_slug }}_network
+
+  mcp-search:
+    build: ./mcp_services/search_server/
+    container_name: "{{ cookiecutter.project_slug }}_mcp_search"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+      OLLAMA_EMBEDDING_MODEL: ${OLLAMA_EMBEDDING_MODEL}
+    ports:
+      - "7071:7071"
+    depends_on:
+      db:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    networks:
+      - {{ cookiecutter.project_slug }}_network
+{% if cookiecutter.include_ingest_server == 'yes' %}
+  mcp-ingest:
+    build: ./mcp_services/ingest_server/
+    container_name: "{{ cookiecutter.project_slug }}_mcp_ingest"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+      OLLAMA_EMBEDDING_MODEL: ${OLLAMA_EMBEDDING_MODEL}
+    volumes:
+      - ./mcp_services/ingest_server:/app
+    ports:
+      - "7072:7072"
+    depends_on:
+      db:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    networks:
+      - {{ cookiecutter.project_slug }}_network
+{% endif %}
+  api:
+    build: ./backend/
+    container_name: "{{ cookiecutter.project_slug }}_backend"
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      mcp-search:
+        condition: service_started
+      ollama:
+        condition: service_started
+    volumes:
+      - ./backend:/app
+    networks:
+      - {{ cookiecutter.project_slug }}_network
+
+  ui:
+    build: ./frontend/
+    container_name: "{{ cookiecutter.project_slug }}_ui"
+    environment:
+      DATABASE_URL: ${FE_DATABASE_URL}
+      CHAINLIT_AUTH_SECRET: ${CHAINLIT_AUTH_SECRET}
+      API_BASE_URL: ${API_BASE_URL}
+    ports:
+      - "8081:8081"
+    depends_on:
+      api:
+        condition: service_started
+      db:
+        condition: service_healthy
+    volumes:
+      - ./frontend:/app
+    networks:
+      - {{ cookiecutter.project_slug }}_network
+
+volumes:
+  ollama_data:
+
+networks:
+  {{ cookiecutter.project_slug }}_network:
+    driver: bridge

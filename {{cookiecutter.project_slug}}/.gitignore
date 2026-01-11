@@ -1,0 +1,15 @@
+# Environment
+.env
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Database
+postgres/db_data/
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,31 @@
+{
+    "project_name": "My AI Project",
+    "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
+    "description": "An AI-powered application",
+    "author": "Your Name",
+    "project_type": [
+        "rag",
+        "chatbot",
+        "agent",
+        "multi_agent"
+    ],
+    "postgres_db": "app_db",
+    "postgres_user": "postgres",
+    "postgres_password": "postgres",
+    "jwt_secret": "change-this-secret-key-in-production",
+    "llm_provider": [
+        "ollama",
+        "openai",
+        "azure_openai"
+    ],
+    "ollama_model": "llama3.2",
+    "embedding_model": "nomic-embed-text",
+    "use_auth": [
+        "yes",
+        "no"
+    ],
+    "include_ingest_server": [
+        "yes",
+        "no"
+    ]
+}

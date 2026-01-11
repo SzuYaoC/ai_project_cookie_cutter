@@ -1,0 +1,7 @@
+# files to exclude from docker context
+__pycache__
+*.pyc
+.git
+.env
+*.egg-info
+postgres/db_data
