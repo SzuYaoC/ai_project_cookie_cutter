@@ -7,6 +7,8 @@ import shutil
 import secrets
 
 PROJECT_TYPE = "{{ cookiecutter.project_type }}"
+USE_AUTH = "{{ cookiecutter.use_auth }}"
+BUILD_FRONTEND = "{{ cookiecutter.build_frontend }}"
 
 # Define which MCP services are needed for each project type
 MCP_SERVICES_BY_TYPE = {
@@ -40,6 +42,37 @@ def remove_unused_mcp_services():
             if os.path.exists(service_path):
                 shutil.rmtree(service_path)
                 print(f"Removed unused MCP service: {service}")
+
+
+def remove_frontend_if_not_needed():
+    """Remove frontend directory if not needed."""
+    if BUILD_FRONTEND != "yes":
+        frontend_dir = os.path.join(os.getcwd(), "frontend")
+        if os.path.exists(frontend_dir):
+            shutil.rmtree(frontend_dir)
+            print("Removed unused frontend directory")
+
+
+def remove_auth_if_not_needed():
+    """Remove auth-related files if not needed."""
+    if USE_AUTH != "yes":
+        # Remove backend auth files
+        backend_auth = os.path.join(os.getcwd(), "backend", "app", "api", "utils", "auth.py")
+        if os.path.exists(backend_auth):
+            os.remove(backend_auth)
+            print("Removed unused backend auth file")
+
+        backend_security = os.path.join(os.getcwd(), "backend", "app", "api", "utils", "security.py")
+        if os.path.exists(backend_security):
+            os.remove(backend_security)
+            print("Removed unused backend security file")
+
+        # Remove frontend auth file (only if frontend exists)
+        if BUILD_FRONTEND == "yes":
+            frontend_auth = os.path.join(os.getcwd(), "frontend", "src", "auth.py")
+            if os.path.exists(frontend_auth):
+                os.remove(frontend_auth)
+                print("Removed unused frontend auth file")
 
 
 def remove_empty_docs_dir():
@@ -82,6 +115,8 @@ def generate_env_file():
 
 if __name__ == "__main__":
     remove_unused_mcp_services()
+    remove_frontend_if_not_needed()
+    remove_auth_if_not_needed()
     remove_empty_docs_dir()
     generate_env_file()
     print(f"\n✓ Project generated successfully for type: {PROJECT_TYPE}")

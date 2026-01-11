@@ -133,6 +133,7 @@ services:
     networks:
       - {{ cookiecutter.project_slug }}_network
 
+{% if cookiecutter.build_frontend == 'yes' %}
   ui:
     build: ./frontend/
     container_name: "{{ cookiecutter.project_slug }}_ui"
@@ -151,6 +152,7 @@ services:
       - ./frontend:/app
     networks:
       - {{ cookiecutter.project_slug }}_network
+{% endif %}
 
 volumes:
   ollama_data:

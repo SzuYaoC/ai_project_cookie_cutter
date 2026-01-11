@@ -1,3 +1,5 @@
+{% if cookiecutter.use_auth == 'yes' %}
+
 from fastapi import HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from uuid import UUID
@@ -8,9 +10,6 @@ from app.config import cfg
 from app.db.models import UserInfo
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-
-
-
 
 
 async def verify_user(session: AsyncSession, username: str, password: str) -> Optional[UserInfo]:
@@ -59,4 +58,4 @@ async def get_current_user(creds: HTTPAuthorizationCredentials = Depends(bearer)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not an access token")
 
     
-
+{% endif %}

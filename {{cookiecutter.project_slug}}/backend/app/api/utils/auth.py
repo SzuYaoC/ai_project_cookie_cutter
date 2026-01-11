@@ -1,3 +1,4 @@
+{% if cookiecutter.use_auth == 'yes' %}
 """
 Authentication API Endpoints
 """
@@ -32,3 +33,4 @@ async def login(username: str,
         "user": {"id": current_user.id, "username": current_user.username, "role": current_user.role},
         "tokens": {"access_token": access, "expires_in": cfg.jwt_expire_minutes * 60}
     }
+{% endif %}

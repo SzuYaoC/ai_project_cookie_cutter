@@ -7,7 +7,9 @@ from chainlit.types import ThreadDict
 from chainlit.data.sql_alchemy import SQLAlchemyDataLayer
 import httpx
 from src.config import API_BASE_URL, DATABASE_URL
+{% if cookiecutter.use_auth == 'yes' %}
 from src.auth import login
+{% endif %}
 
 
 ## ----------------------
@@ -20,6 +22,7 @@ def data_layer():
     )
 
 
+{% if cookiecutter.use_auth == 'yes' %}
 ## ----------------------
 ## Authentication
 ## ----------------------
@@ -41,6 +44,7 @@ async def auth_callback(username: str, password: str):
         identifier=identifier,
         metadata=user
     )
+{% endif %}
 
 
 
@@ -76,19 +80,25 @@ async def on_message(message: cl.Message):
     context =  cl.user_session.get("context")
 
     # Access Token
+    {% if cookiecutter.use_auth == 'yes' %}
     access = cl.user_session.get("access_token")
     if not access:
         await cl.Message("Not authenticated. Please log in again.").send()
         return
+    {% endif %}
 
 
     """Handle RAG queries"""
     async with httpx.AsyncClient() as client:
         try:
+            headers = {}
+            {% if cookiecutter.use_auth == 'yes' %}
+            headers["Authorization"] = f"Bearer {access}"
+            {% endif %}
             response = await client.post(
                 f"{API_BASE_URL}/ask",
                 json={"question": message.content, "k": 5},
-                headers={"Authorization": f"Bearer {access}"},
+                headers=headers,
                 timeout=60.0
             )
             response.raise_for_status()
@@ -136,19 +146,25 @@ async def on_message(message: cl.Message):
 
     # Access Token
     access = cl.user_session.get("access_token")
+    {% if cookiecutter.use_auth == 'yes' %}
     if not access:
         await cl.Message("Not authenticated. Please log in again.").send()
         return
+    {% endif %}
 
     """Handle chat messages"""
     history = cl.user_session.get("history", [])
     
     async with httpx.AsyncClient() as client:
         try:
+            headers = {}
+            {% if cookiecutter.use_auth == 'yes' %}
+            headers["Authorization"] = f"Bearer {access}"
+            {% endif %}
             response = await client.post(
                 f"{API_BASE_URL}/chat",
                 json={"message": message.content, "history": history},
-                headers={"Authorization": f"Bearer {access}"},
+                headers=headers,
                 timeout=60.0
             )
             response.raise_for_status()
@@ -194,9 +210,11 @@ async def on_message(message: cl.Message):
 
     # Access Token
     access = cl.user_session.get("access_token")
+    {% if cookiecutter.use_auth == 'yes' %}
     if not access:
         await cl.Message("Not authenticated. Please log in again.").send()
         return
+    {% endif %}
 
 
 
@@ -206,10 +224,14 @@ async def on_message(message: cl.Message):
             msg = cl.Message(content="🔄 Working on your task...")
             await msg.send()
             
+            headers = {}
+            {% if cookiecutter.use_auth == 'yes' %}
+            headers["Authorization"] = f"Bearer {access}"
+            {% endif %}
             response = await client.post(
                 f"{API_BASE_URL}/agent",
                 json={"task": message.content},
-                headers={"Authorization": f"Bearer {access}"},
+                headers=headers,
                 timeout=120.0
             )
             response.raise_for_status()
@@ -261,9 +283,11 @@ async def on_message(message: cl.Message):
 
     # Access Token
     access = cl.user_session.get("access_token")
+    {% if cookiecutter.use_auth == 'yes' %}
     if not access:
         await cl.Message("Not authenticated. Please log in again.").send()
         return
+    {% endif %}
 
 
     async with httpx.AsyncClient() as client:
@@ -271,10 +295,14 @@ async def on_message(message: cl.Message):
             msg = cl.Message(content="🤖 Coordinating agents...")
             await msg.send()
             
+            headers = {}
+            {% if cookiecutter.use_auth == 'yes' %}
+            headers["Authorization"] = f"Bearer {access}"
+            {% endif %}
             response = await client.post(
                 f"{API_BASE_URL}/multi-agent",
                 json={"task": message.content},
-                headers={"Authorization": f"Bearer {access}"},
+                headers=headers,
                 timeout=180.0
             )
             response.raise_for_status()

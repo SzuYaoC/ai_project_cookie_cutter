@@ -15,8 +15,10 @@ app.add_middleware(
 )
 
 # Import routers
+{% if cookiecutter.use_auth == 'yes' %}
 from app.api.utils import auth
 app.include_router(auth.router, tags=["auth"])
+{% endif %}
 
 {% if cookiecutter.project_type == 'rag' %}
 from app.api import rag, search
