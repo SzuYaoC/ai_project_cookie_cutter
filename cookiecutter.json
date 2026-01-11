@@ -23,9 +23,5 @@
     "use_auth": [
         "yes",
         "no"
-    ],
-    "include_ingest_server": [
-        "yes",
-        "no"
     ]
 }

@@ -28,7 +28,7 @@ services:
       - ollama_data:/root/.ollama
     networks:
       - {{ cookiecutter.project_slug }}_network
-
+{% if cookiecutter.project_type == 'rag' %}
   mcp-search:
     build: ./mcp_services/search_server/
     container_name: "{{ cookiecutter.project_slug }}_mcp_search"
@@ -45,7 +45,7 @@ services:
         condition: service_started
     networks:
       - {{ cookiecutter.project_slug }}_network
-{% if cookiecutter.include_ingest_server == 'yes' %}
+
   mcp-ingest:
     build: ./mcp_services/ingest_server/
     container_name: "{{ cookiecutter.project_slug }}_mcp_ingest"
@@ -65,6 +65,49 @@ services:
     networks:
       - {{ cookiecutter.project_slug }}_network
 {% endif %}
+{% if cookiecutter.project_type == 'chatbot' %}
+  mcp-memory:
+    build: ./mcp_services/memory_server/
+    container_name: "{{ cookiecutter.project_slug }}_mcp_memory"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    ports:
+      - "7071:7071"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - {{ cookiecutter.project_slug }}_network
+{% endif %}
+{% if cookiecutter.project_type == 'agent' or cookiecutter.project_type == 'multi_agent' %}
+  mcp-tools:
+    build: ./mcp_services/tools_server/
+    container_name: "{{ cookiecutter.project_slug }}_mcp_tools"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+    ports:
+      - "7071:7071"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - {{ cookiecutter.project_slug }}_network
+{% endif %}
+{% if cookiecutter.project_type == 'multi_agent' %}
+  mcp-coordination:
+    build: ./mcp_services/coordination_server/
+    container_name: "{{ cookiecutter.project_slug }}_mcp_coordination"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    ports:
+      - "7073:7073"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - {{ cookiecutter.project_slug }}_network
+{% endif %}
   api:
     build: ./backend/
     container_name: "{{ cookiecutter.project_slug }}_backend"
@@ -73,8 +116,16 @@ services:
     ports:
       - "8000:8000"
     depends_on:
+{% if cookiecutter.project_type == 'rag' %}
       mcp-search:
         condition: service_started
+{% elif cookiecutter.project_type == 'chatbot' %}
+      mcp-memory:
+        condition: service_started
+{% elif cookiecutter.project_type == 'agent' or cookiecutter.project_type == 'multi_agent' %}
+      mcp-tools:
+        condition: service_started
+{% endif %}
       ollama:
         condition: service_started
     volumes:

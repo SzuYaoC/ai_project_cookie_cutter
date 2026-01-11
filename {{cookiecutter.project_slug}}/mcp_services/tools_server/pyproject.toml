@@ -1,0 +1,15 @@
+[project]
+name = "{{ cookiecutter.project_slug }}-mcp-tools"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.27",
+  "httpx>=0.27",
+  "sqlalchemy>=2.0",
+  "psycopg[binary]>=3.1",
+  "fastmcp>=2.14",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["tools_server"]
