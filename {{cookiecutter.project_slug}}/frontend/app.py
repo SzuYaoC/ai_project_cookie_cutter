@@ -4,8 +4,10 @@ Chainlit application - varies by project type
 import chainlit as cl
 from chainlit.context import get_context
 from chainlit.types import ThreadDict
+from chainlit.data.sql_alchemy import SQLAlchemyDataLayer
 import httpx
-from config import API_BASE_URL
+from src.config import API_BASE_URL, DATABASE_URL
+from src.auth import login
 
 
 ## ----------------------

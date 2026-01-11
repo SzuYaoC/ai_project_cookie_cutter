@@ -4,6 +4,8 @@
 import os
 import shutil
 
+import secrets
+
 PROJECT_TYPE = "{{ cookiecutter.project_type }}"
 
 # Define which MCP services are needed for each project type
@@ -47,7 +49,39 @@ def remove_empty_docs_dir():
         os.rmdir(docs_dir)
 
 
+def generate_env_file():
+    """Generate .env file from .env.example with secure secrets."""
+    env_example = ".env.example"
+    env_target = ".env"
+    
+    if not os.path.exists(env_example):
+        print(f"Warning: {env_example} not found, skipping .env generation.")
+        return
+
+    # Generate secure secrets
+    jwt_secret = secrets.token_urlsafe(32)
+    chainlit_secret = secrets.token_urlsafe(32)
+
+    with open(env_example, "r") as f:
+        lines = f.readlines()
+
+    new_lines = []
+    for line in lines:
+        if line.startswith("JWT_SECRET_KEY="):
+            new_lines.append(f"JWT_SECRET_KEY={jwt_secret}\n")
+        elif line.startswith("CHAINLIT_AUTH_SECRET="):
+            new_lines.append(f"CHAINLIT_AUTH_SECRET={chainlit_secret}\n")
+        else:
+            new_lines.append(line)
+
+    with open(env_target, "w") as f:
+        f.writelines(new_lines)
+    
+    print(f"✓ Generated {env_target} with secure secrets")
+
+
 if __name__ == "__main__":
     remove_unused_mcp_services()
     remove_empty_docs_dir()
+    generate_env_file()
     print(f"\n✓ Project generated successfully for type: {PROJECT_TYPE}")

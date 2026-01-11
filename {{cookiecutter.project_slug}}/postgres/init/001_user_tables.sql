@@ -72,6 +72,31 @@ CREATE TABLE threads (
     FOREIGN KEY ("userId") REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE steps (
+    id UUID PRIMARY KEY,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    "threadId" UUID NOT NULL,
+    "parentId" UUID,
+    streaming BOOLEAN NOT NULL,
+    "waitForAnswer" BOOLEAN,
+    "isError" BOOLEAN,
+    metadata JSONB,
+    tags TEXT[],
+    input TEXT,
+    output TEXT,
+    "createdAt" TEXT,
+    command TEXT,
+    start TEXT,
+    "end" TEXT,
+    generation JSONB,
+    "showInput" TEXT,
+    language TEXT,
+    indent INT,
+    "defaultOpen" BOOLEAN,
+    FOREIGN KEY ("threadId") REFERENCES threads(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS elements (
     "id" UUID PRIMARY KEY,
     "threadId" UUID,
