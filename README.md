@@ -64,3 +64,12 @@ uvx cookiecutter ./ai_project_cookiecutter
 ### Multi-Agent
 - **tools_server** - Shared tools for all agents
 - **coordination_server** - Task management, inter-agent messaging
+
+## Post-Generation Cleanup
+
+The template includes a post-generation hook (`hooks/post_gen_project.py`) that automatically:
+
+- Removes unused MCP services based on your selected `project_type`
+- Cleans up empty directories
+
+This keeps your generated project lean with only the services you need.

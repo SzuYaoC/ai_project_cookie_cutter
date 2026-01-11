@@ -27,14 +27,14 @@ docker compose up --build
 docker compose exec ollama ollama pull {{ cookiecutter.ollama_model }}
 docker compose exec ollama ollama pull {{ cookiecutter.embedding_model }}
 ```
-{% if cookiecutter.include_ingest_server == 'yes' %}
+{% if cookiecutter.project_type == 'rag' %}
 ### 4. Ingest Documents
 
 ```bash
 docker compose exec mcp-ingest python run_pipeline.py
 ```
 {% endif %}
-### 5. Access the UI
+### {% if cookiecutter.project_type == 'rag' %}5{% else %}4{% endif %}. Access the UI
 
 Open http://localhost:8081
 
@@ -59,7 +59,7 @@ Open http://localhost:8081
 ├── backend/           # FastAPI + LangGraph
 ├── frontend/          # Chainlit UI
 ├── mcp_services/
-│   ├── search_server/ # Vector search{% if cookiecutter.include_ingest_server == 'yes' %}
+│   ├── search_server/ # Vector search{% if cookiecutter.project_type == 'rag' %}
 │   └── ingest_server/ # Document ingestion{% endif %}
 ├── postgres/
 │   └── init/          # Schema SQL
